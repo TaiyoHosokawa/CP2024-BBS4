@@ -405,8 +405,8 @@ function login(email, password) {
 }
 
 // 新規登録処理
-function register(email, password) {
-    if (!validateAuthInput(email, password, true)) return;
+function register(email, password,displayName) {
+    if (!validateAuthInput(email, password, displayName,true)) return;
 
     const button = $('#registerButton');
     button.prop('disabled', true);
