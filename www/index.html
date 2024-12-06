@@ -487,13 +487,15 @@ $(function() {
     $('#loginButton').on('click', function() {
         const email = $('#loginEmail').val();
         const password = $('#loginPassword').val();
-        login(email, password);
+        const displayName = $('#logindisplayName').val();
+        login(email, password,displayName);
     });
 
     $('#registerButton').on('click', function() {
         const email = $('#loginEmail').val();
         const password = $('#loginPassword').val();
-        register(email, password);
+        const displayName = $('#logindisplayName').val();
+        register(email, password,displayName);
     });
 
     $('#logoutButton').on('click', logout);
