@@ -98,7 +98,7 @@ function validateAuthInput(email, password, isRegister = false) {
 }
 
 // 投稿処理
-function createPost(author, content) {
+function createPost(auther,content) {
     if (!currentUser) {
         showMessage('投稿するにはログインが必要です', 'error');
         return;
@@ -109,9 +109,9 @@ function createPost(author, content) {
     const button = $('#postButton');
     button.prop('disabled', true);
 
-    // author はログインしているユーザのメールアドレスに変更、userId を追加
     const postData = {
-        author: currentUser.email,
+        author: currentUser.email, // ログイン中のユーザーのメールアドレス
+        authorDisplayName: currentUser.displayName || '名無し', // ニックネームまたはデフォルト値
         content: content,
         timestamp: firebase.database.ServerValue.TIMESTAMP,
         userId: currentUser.uid
@@ -161,52 +161,29 @@ function canEditPost(post) {
 
 // 投稿のHTML要素を生成
 function createPostElement(post) {
-    // 編集権限を確認
     const canEdit = canEditPost(post);
-    // 編集権限があれば、編集・削除機能を表示
     const actions = canEdit ? `
         <div class="post-actions">
-            <button class="btn-edit" onclick="startEdit('${post.id}')">
-                編集
-            </button>
-            <button class="btn-delete" onclick="deletePost('${post.id}')">
-                削除
-            </button>
+            <button class="btn-edit" onclick="startEdit('${post.id}')">編集</button>
+            <button class="btn-delete" onclick="deletePost('${post.id}')">削除</button>
         </div>
     ` : '';
 
     return `
         <div class="post" id="post-${post.id}">
             <div class="post-header">
-                <span class="post-author">${escapeHtml(post.author)}</span>
-                <!-- 編集権限があれば、編集・削除機能を表示 -->
+                <span class="post-author">${escapeHtml(post.authorDisplayName || '名無し')}</span>
                 ${actions}
             </div>
             <div class="post-content">${escapeHtml(post.content)}</div>
-            <div class="edit-form">
-                <textarea class="form-control" id="edit-${post.id}"></textarea>
-                <div class="button-group">
-                    <button class="btn-primary" onclick="updatePost('${post.id}')">
-                        更新
-                    </button>
-                    <button class="btn-cancel" onclick="cancelEdit('${post.id}')">
-                        キャンセル
-                    </button>
-                </div>
-            </div>
             <div class="post-footer">
-                <span class="post-time">
-                    ${formatTimestamp(post.timestamp)}
-                </span>
-                ${post.updatedAt ? `
-                    <span class="post-updated">
-                        (編集済み: ${formatTimestamp(post.updatedAt)})
-                    </span>
-                ` : ''}
+                <span class="post-time">${formatTimestamp(post.timestamp)}</span>
+                ${post.updatedAt ? `<span class="post-updated">(編集済み: ${formatTimestamp(post.updatedAt)})</span>` : ''}
             </div>
         </div>
     `;
 }
+
 
 // 投稿の表示処理
 function renderPosts(posts) {
@@ -405,13 +382,26 @@ function login(email, password) {
 }
 
 // 新規登録処理
-function register(email, password,displayName) {
-    if (!validateAuthInput(email, password, displayName,true)) return;
+function register(email, password, displayName) {
+    if (!validateAuthInput(email, password, true)) return;
 
     const button = $('#registerButton');
     button.prop('disabled', true);
 
     firebase.auth().createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            // ユーザー作成成功後、`displayName`をプロファイルに保存
+            const user = userCredential.user;
+            return user.updateProfile({
+                displayName: displayName
+            }).then(() => {
+                // FirestoreまたはRealtime Databaseに`authorDisplayName`を保存（任意）
+                return firebase.database().ref(`users/${user.uid}`).set({
+                    email: user.email,
+                    authorDisplayName: displayName
+                });
+            });
+        })
         .then(() => {
             showMessage('アカウントを作成しました');
             clearAuthForm();
