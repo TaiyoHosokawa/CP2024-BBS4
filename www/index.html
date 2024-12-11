@@ -316,7 +316,6 @@ function startEdit(postId) {
     updateCharacterCount('editContent', 'editContentCount', 1000);
     showModal('editModal');
 }
-
 // 編集のキャンセル
 function cancelEdit(postId) {
     const postElement = $(`#post-${postId}`);
@@ -344,6 +343,28 @@ function updatePost(postId) {
         .catch((error) => {
             showMessage('更新に失敗しました：' + error.message, 'error');
         });
+}
+
+function updateDisplayName(newDisplayName) {
+    if (!currentUser) {
+        showMessage('ログインしてください', 'error');
+        return;
+    }
+
+    currentUser.updateProfile({
+        displayName: newDisplayName
+    }).then(() => {
+        // FirestoreまたはRealtime Databaseも更新
+        return firebase.database().ref(`users/${currentUser.uid}`).update({
+            authorDisplayName: newDisplayName
+        });
+    }).then(() => {
+        showMessage('ニックネームを更新しました');
+        $('#displayNameInput').val(''); // 入力フィールドをクリア
+        updateUI(currentUser); // UIを更新
+    }).catch((error) => {
+        showMessage('ニックネームの更新に失敗しました：' + error.message, 'error');
+    });
 }
 
 // 投稿の削除
@@ -543,7 +564,15 @@ window.addEventListener('unload', function() {
             <span>ログイン中：<span id="userEmail"></span></span>
             <button id="logoutButton" class="btn-secondary">ログアウト</button>
         </div>
-
+        <div class="update-display-name logged-in">
+    <div class="form-group">
+        <label for="displayNameInput">ニックネームの変更</label>
+        <input type="text" id="displayNameInput" class="form-control" placeholder="新しいニックネーム">
+    </div>
+    <button onclick="updateDisplayName($('#displayNameInput').val())" class="btn-primary">
+        更新
+    </button>
+</div>
         <!-- 投稿フォーム（ログイン時表示） -->
         <div class="post-form logged-in">
             <div class="form-group">
