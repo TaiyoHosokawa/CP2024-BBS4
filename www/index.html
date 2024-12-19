@@ -110,7 +110,7 @@ function createPost(auther,content) {
     button.prop('disabled', true);
 
     const postData = {
-        author: currentUser.email, // ログイン中のユーザーのメールアドレス
+        author: currentUser.email, // ログイン中ユーザーのメールアドレス
         authorDisplayName: currentUser.displayName || '名無し', // ニックネームまたはデフォルト値
         content: content,
         timestamp: firebase.database.ServerValue.TIMESTAMP,
@@ -359,6 +359,8 @@ function updateDisplayName(newDisplayName) {
         updateUI(currentUser); // UIを更新
     }).catch((error) => {
         showMessage('ニックネームの更新に失敗しました：' + error.message, 'error');
+        $('#displayNameInput').val(''); // 入力フィールドをクリア
+        updateUI(currentUser); // UIを更新
     });
 }
 
@@ -411,7 +413,7 @@ function register(email, password, displayName) {
             return user.updateProfile({
                 displayName: displayName
             }).then(() => {
-                // FirestoreまたはRealtime Databaseに`authorDisplayName`を保存（任意）
+                // FirestoreまたはRealtime Databaseに`authorDisplayName`を保存
                 return firebase.database().ref(`users/${user.uid}`).set({
                     email: user.email,
                     authorDisplayName: displayName
