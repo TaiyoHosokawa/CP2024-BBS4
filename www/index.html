@@ -346,11 +346,6 @@ function updatePost(postId) {
 }
 
 function updateDisplayName(newDisplayName) {
-    if (!currentUser) {
-        showMessage('ログインしてください', 'error');
-        return;
-    }
-
     currentUser.updateProfile({
         displayName: newDisplayName
     }).then(() => {
