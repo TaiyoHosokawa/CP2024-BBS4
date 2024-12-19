@@ -349,7 +349,7 @@ function updateDisplayName(newDisplayName) {
     currentUser.updateProfile({
         displayName: newDisplayName
     }).then(() => {
-        // FirestoreまたはRealtime Databaseも更新
+        // Firestoreも更新
         return firebase.database().ref(`users/${currentUser.uid}`).update({
             authorDisplayName: newDisplayName
         });
@@ -413,7 +413,7 @@ function register(email, password, displayName) {
             return user.updateProfile({
                 displayName: displayName
             }).then(() => {
-                // FirestoreまたはRealtime Databaseに`authorDisplayName`を保存
+                // Firestoreに`authorDisplayName`を保存
                 return firebase.database().ref(`users/${user.uid}`).set({
                     email: user.email,
                     authorDisplayName: displayName
