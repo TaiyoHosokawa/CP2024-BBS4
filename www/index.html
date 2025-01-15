@@ -183,8 +183,6 @@ function createPostElement(post) {
         </div>
     `;
 }
-
-
 // 投稿の表示処理
 function renderPosts(posts) {
     const postsDiv = $('#postsList');
@@ -563,6 +561,7 @@ window.addEventListener('unload', function() {
         </div>
         <div class="update-display-name logged-in">
     <div class="form-group">
+        <!-- ニックネーム変更情報（ログイン時表示） -->
         <label for="displayNameInput">ニックネームの変更</label>
         <input type="text" id="displayNameInput" class="form-control" placeholder="新しいニックネーム">
     </div>
